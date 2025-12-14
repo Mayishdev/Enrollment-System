@@ -28,7 +28,9 @@ if (isset($_GET['subject_id'])) {
         $passed = false;
         if (mysqli_num_rows($check_result) > 0) {
             $grade = mysqli_fetch_assoc($check_result)['grade'];
-            if (in_array(strtoupper($grade), ['PASS','A','B','C'])) {
+            
+            // Numeric grade check
+            if (is_numeric($grade) && floatval($grade) <= 3.0) {
                 $passed = true;
             }
         }
@@ -55,7 +57,7 @@ if (isset($_GET['subject_id'])) {
 }
 
 // Get all subjects
-$subjects_query = "SELECT s1.id, s1.subject_name, s2.subject_name AS prerequisite
+$subjects_query = "SELECT s1.id, s1.subject_code, s1.subject_name, s2.subject_name AS prerequisite
                    FROM subjects s1
                    LEFT JOIN subjects s2 ON s1.prerequisite_id = s2.id";
 $subjects_result = mysqli_query($conn, $subjects_query);
@@ -65,7 +67,7 @@ $subjects_result = mysqli_query($conn, $subjects_query);
 <html>
 <head>
     <title>Enroll Subjects</title>
-    <!-- Bootstrap CSS -->
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
@@ -80,7 +82,8 @@ $subjects_result = mysqli_query($conn, $subjects_query);
         <table class="table table-bordered table-striped text-center">
             <thead class="table-dark">
                 <tr>
-                    <th>Subject</th>
+                    <th>Subject Code</th>
+                    <th>Subject Name</th>
                     <th>Prerequisite</th>
                     <th>Action</th>
                 </tr>
@@ -88,6 +91,7 @@ $subjects_result = mysqli_query($conn, $subjects_query);
             <tbody>
             <?php while($row = mysqli_fetch_assoc($subjects_result)): ?>
                 <tr>
+                    <td><?php echo $row['subject_code']; ?></td>
                     <td><?php echo $row['subject_name']; ?></td>
                     <td><?php echo $row['prerequisite'] ?? '-'; ?></td>
                     <td>
